@@ -63,7 +63,7 @@ Reading [the templates page of blakadder](https://templates.blakadder.com/qs-wif
  {"NAME":"QS-WiFi-D01-TRIAC","GPIO":[0,3200,0,3232,0,0,0,0,0,352,416,0,0,0],"FLAG":0,"BASE":18}
 ```
 
-And add the script found at a [a github subpage](https://gist.github.com/thxthx0/12074f1f5249e14b2a0aada75f590c9b).
+And add the script found at a [github subpage](https://gist.github.com/thxthx0/12074f1f5249e14b2a0aada75f590c9b).
 
 ## Step 3: Testing script and availability
 I tested the device using a wooden board
@@ -250,7 +250,7 @@ action:
 ## Step 8: Using schedule to plan any wake-up
 
 Although HomeAssistant currently has an function to create schedules i prefer another HomeAssistant-Addon
-See (this site)[https://github.com/arthurdent75/SimpleScheduler] for more information how to install and use.
+See [this site](https://github.com/arthurdent75/SimpleScheduler) for more information how to install and use.
 It uses my helper 'input_boolean.wakeup_light_on'
 
 ## Step 9: make nice dashboard-controls for the family
