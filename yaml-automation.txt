@@ -1,0 +1,61 @@
+alias: Wakeup-light
+description: Start of beëindig wake-up (van dimmer1)
+trigger:
+  - platform: state
+    entity_id:
+      - input_boolean.wakeup_light_on
+    to: "on"
+    id: wakeup-start
+  - platform: state
+    entity_id:
+      - input_boolean.wakeup_light_on
+    to: "off"
+    id: wakeup-einde
+  - platform: state
+    entity_id:
+      - light.dimmer1
+    to: "off"
+    id: dimmer gaat uit
+condition:
+  - condition: state
+    entity_id: input_boolean.gebruik_wake_up_light
+    state: "on"
+  - condition: state
+    entity_id: light.dimmer1
+    state: unavailable
+    alias: Dimmer1 is NOT unavailable
+    enabled: false
+action:
+  - if:
+      - condition: trigger
+        id: wakeup-start
+    then:
+      - service: script.wake_up_light
+        data: {}
+  - if:
+      - condition: trigger
+        id: wakeup-einde
+    then:
+      - service: script.turn_off
+        data:
+          entity_id: script.wake_up_light
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.dimmer1
+  - if:
+      - condition: trigger
+        id: dimmer gaat uit
+    then:
+      - service: script.turn_off
+        data:
+          entity_id: script.wake_up_light
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.dimmer1
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.wakeup_light_on
+mode: restart

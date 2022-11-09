@@ -1,0 +1,34 @@
+type: horizontal-stack
+cards:
+  - type: custom:button-card
+    name: Wakeup-light
+    entity: input_boolean.wakeup_light_on
+    icon: hass:weather-sunset
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - height: 170px
+    state:
+      - value: 'off'
+        name: Start wake-up
+      - value: 'on'
+        name: STOP en UIT
+  - type: light
+    entity: light.dimmer1
+    name: Plafondlamp
+    icon: mdi:ceiling-light-outline
+  - type: custom:button-card
+    name: Wakeup-light
+    entity: input_boolean.gebruik_wake_up_light
+    tap_action:
+      action: toggle
+    styles:
+      card:
+        - height: 170px
+    state:
+      - value: 'off'
+        name: Geen wake-up
+        icon: mdi:sleep
+      - value: 'on'
+        name: Wake-up AAN

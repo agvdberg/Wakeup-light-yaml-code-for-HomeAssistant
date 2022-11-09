@@ -76,13 +76,239 @@ I tested the device using a wooden board
 
 ----------------------------
 
+## Step 4: Check availibilty of the Tasmota-Wifi-Dimmer in HomeAssistant
 
-## Not covered but links where to find
+You can test the function as wel
 
-- how to compile tasmota software
-- how to burn tasmota software on wall-module
-- HomeAssistant. [Starting point](https://www.home-assistant.io/)
-- Building User Interfaces and automations in HomeAssistant. [A lot on YouTube](https://www.youtube.com/results?search_query=home+assistant+beginners+guide)
+<div align="center">
+  <kbd>
+    <img src="images/HomeAssistant Dimmer Device.jpg" />
+  </kbd>
+</div>
+
+### Step 5: Script to wake-up the light
+
+The transition-command seems not available, so we have to set a few brightness levels in series
+
+```
+alias: Wake-up light
+sequence:
+  - service: light.turn_on
+    data:
+      brightness_pct: 10
+    target:
+      entity_id: light.dimmer1
+    alias: Dimmer 10%
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - service: light.turn_on
+    data:
+      brightness_pct: 20
+    target:
+      entity_id: light.dimmer1
+    alias: Dimmer 20%
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - service: light.turn_on
+    data:
+      brightness_pct: 30
+    target:
+      entity_id: light.dimmer1
+    alias: Dimmer 30%
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - service: light.turn_on
+    data:
+      brightness_pct: 40
+    target:
+      entity_id: light.dimmer1
+    alias: Dimmer 40%
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - service: light.turn_on
+    data:
+      brightness_pct: 50
+    target:
+      entity_id: light.dimmer1
+    alias: Dimmer 50%
+mode: restart
+icon: hass:weather-sunset
+```
+
+## Step 6: Helpers
+
+
+| NAME | USAGE |
+|-----------------------------|------------------------|
+| input_boolean.wakeup_light_on  | Triggers the automation    |
+| input_boolean.gebruik_wake_up_light | Overrule not to use the light (when on holiday e.g.) |
+
+
+## Step 7: automation to wake up 
+
+(the complete code is in the seperate file)
+
+First, the trigger and action when the wakeup-light has to start
+
+```
+trigger:
+  - platform: state
+    entity_id:
+      - input_boolean.wakeup_light_on
+    to: "on"
+    id: wakeup-start
+	
+condition:
+  - condition: state
+    entity_id: input_boolean.gebruik_wake_up_light
+    state: "on"
+
+action:
+  - if:
+      - condition: trigger
+        id: wakeup-start
+    then:
+      - service: script.wake_up_light
+        data: {}
+    else:
+      - service: script.turn_off
+        data:
+          entity_id: script.wake_up_light
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.dimmer1
+	
+```
+
+Second, when there is an schedule available the boolean-trigger is been turned off.
+Also the script has to abort.
+
+```
+trigger:
+  - platform: state
+    entity_id:
+      - input_boolean.wakeup_light_on
+    to: "off"
+    id: wakeup-einde
+
+action:
+  - if:
+      - condition: trigger
+        id: wakeup-einde
+    then:
+      - service: script.turn_off
+        data:
+          entity_id: script.wake_up_light
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.dimmer1
+```
+
+And third, the same applies for any turn-off command (with the fysical switch on the wall or in HomeAssistant)
+
+```
+trigger:
+  - platform: state
+    entity_id:
+      - light.dimmer1
+    to: "off"
+    id: dimmer gaat uit
+
+action:
+ - if:
+      - condition: trigger
+        id: dimmer gaat uit
+    then:
+      - service: script.turn_off
+        data:
+          entity_id: script.wake_up_light
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.dimmer1
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.wakeup_light_on
+
+```
+
+## Step 8: Using schedule to plan any wake-up
+
+Although HomeAssistant currently has an function to create schedules i prefer another HomeAssistant-Addon
+See (this site)[https://github.com/arthurdent75/SimpleScheduler] for more information how to install and use.
+It uses my helper 'input_boolean.wakeup_light_on'
+
+## Step 9: make nice dashboard-controls for the family
+
+(again, the complete code is in a seperate file)
+
+<div align="center">
+  <kbd>
+    <img src="images/HomeAssistant Dashboard.jpg" />
+  </kbd>
+</div>
+
+I use [Custom Button cards](https://github.com/custom-cards/button-card) to make a button any way i like
+
+Left button: start and (more important) stop wake-up sequence
+```
+type: custom:button-card
+name: Wakeup-light
+entity: input_boolean.wakeup_light_on
+icon: hass:weather-sunset
+tap_action:
+  action: toggle
+styles:
+  card:
+    - height: 170px
+state:
+  - value: 'off'
+    name: Start wake-up
+  - value: 'on'
+    name: STOP en UIT
+```
+
+Middle button: control the light  (normal card so it is easy to dimm any direction)
+```
+type: light
+entity: light.dimmer1
+name: Plafondlamp
+icon: mdi:ceiling-light-outline
+```
+
+Right button: turn wakeup-schedule on or off
+```
+type: custom:button-card
+name: Wakeup-light
+entity: input_boolean.gebruik_wake_up_light
+tap_action:
+  action: toggle
+styles:
+  card:
+    - height: 170px
+state:
+  - value: 'off'
+    name: Geen wake-up
+    icon: mdi:sleep
+  - value: 'on'
+    name: Wake-up AAN
+```
+
 
 ### License
 
@@ -96,77 +322,4 @@ Inspiration, code snippets, etc.
 
 
 ------------------------
-
-# Examples to use in editing
-
-## level 2 header
-### level 3 header
-
-- opsomming 1
-- opsomming 2
-- [ESPHome software](https://esphome.io/)  		(to program the ESP8266)
- 
- Plaatje
-
-Code
-```
-# button functionality
-# Button is pushed low for 0,5 sec
-button:
-  - platform: template
-    name: ${devicename} Button-CHANNEL-RX-IO3
-    id: wemosd1_rx_button
-    icon: "mdi:gesture-tap-button"
-    on_press:
-      - logger.log: "Knop CHANNEL ingedrukt = output RX even LOW = CHANNEL"
-      - switch.turn_off: pin3   # negative: pin=off => output low
-      - delay: 500ms 
-      - switch.turn_on: pin3    # pin=on => output high
-  - platform: template
-    name: ${devicename} Button-UP-D5-IO14
-    id: wemosd1_d5_button
-    icon: "mdi:gesture-tap-button"
-    on_press:
-      - logger.log: "Knop UP ingedrukt = output D5 even LOW = UP"
-      - switch.turn_off: pin14   # negative: pin=off => output low
-      - delay: 500ms 
-      - switch.turn_on: pin14    # pin=on => output high
-  - platform: template
-    name: ${devicename} Button-STOP-D6-IO12
-    id: wemosd1_d6_button
-    icon: "mdi:gesture-tap-button"
-    on_press:
-      - logger.log: "Knop STOP ingedrukt = output D6 even LOW = STOP"
-      - switch.turn_off: pin12   # negative: pin=off => output low
-      - delay: 500ms 
-      - switch.turn_on: pin12    # pin=on => output high
-  - platform: template
-    name: ${devicename} Button-DOWN-D7-IO13
-    id: wemosd1_d7_button
-    icon: "mdi:gesture-tap-button"
-    on_press:
-      - logger.log: "Knop DOWN ingedrukt = output D7 even LOW = DOWN"
-      - switch.turn_off: pin13   # negative: pin=off => output low
-      - delay: 500ms 
-      - switch.turn_on: pin13    # pin=on => output high
-```
-
-Tabel
-
-| RGB LED (PL9823)            | ESP - WemosD1 mini Pro |
-|-----------------------------|------------------------|
-| (short) pin 1 Data In (DI)  | TGPIO00 = D3           |
-| (short) pin 2 V+ (5V)       | 5V                     |
-| (long)  pin 3 GND           | GND                    |
-| (long)  pin 4 Data Out (DO) | not connected          |
-
-Bullet's
-
-### To-do
-
-- [x] Working with a prototype-board
-- [ ] ~~Redesign and use an dedicated pcb~~
-- [ ] ~~Temperature & Humidity sensor~~
-- [ ] Design and print a nice 3D case
-
 
