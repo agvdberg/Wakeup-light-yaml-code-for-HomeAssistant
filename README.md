@@ -5,7 +5,11 @@ Personal project to use a wall module behind a normal switch to turn on the ceil
 
  - Wifi Wall Dimmer Module
  
- (plaatje dimmer module)
+<div align="center">
+  <kbd>
+    <img src="images/qs-wifi_D01_dimmer.webp" />
+  </kbd>
+</div>
 
  - Pulse switch
 
@@ -59,11 +63,6 @@ Inspiration, code snippets, etc.
 - [ESPHome software](https://esphome.io/)  		(to program the ESP8266)
  
  Plaatje
-<div align="center">
-  <kbd>
-    <img src="images/SomfyIO_ESPHome_AGvdBerg_7-Final board_4.jpg" />
-  </kbd>
-</div>
 
 Code
 ```
