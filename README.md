@@ -3,8 +3,9 @@ Personal project to use a wall module behind a normal switch to turn on the ceil
 
 ## Needed hardware
 
- - Wifi Wall Dimmer Module
- 
+ <b>Wifi Wall Dimmer Module</b>
+ In this case i had a "QS-WiFi-D01-TRIAC 150W Dimmer Module" laying around.
+  
 <div align="center">
   <kbd>
     <img src="images/qs-wifi_D01_dimmer.webp" />
@@ -13,25 +14,68 @@ Personal project to use a wall module behind a normal switch to turn on the ceil
 
  - Pulse switch
 
- (plaatje puls switch)
+<div align="center">
+  <kbd>
+    <img src="images/gira-015100-wipptaster-schliesser-einsatz_4.jpg" />
+  </kbd>
+</div>
  
  - normal wall mount
- - normal ceiling light (dimmable led)
+ - normal ceiling light (with a dimmable led)
  
 ## Needed software
 
-- Tasmota
+- [Tasmota software](https://tasmota.github.io/docs/)
 - [HomeAssistant software](https://www.home-assistant.io/)	
 
-## Steps 
 
-### Program Wall dimmer module with Tasmota firmware
+## Step 1: flash Wall dimmer module with Tasmota firmware
 
-- compile tasmota software 
-- burn tasmota software
-- add wall module
+The wall module can not use the normal precompiled tasmota software.
+At [the templates page of blakadder](https://templates.blakadder.com/qs-wifi_D01_dimmer.html) this is explained.
+It needs a 'dimmer' script. To turn on [scripting in tasmota](https://tasmota.github.io/docs/Scripting-Language/) you have to compile this.
+There is an easy manual how to compile tasmota software, completely in the cloud at a [Tasmota-github-page](https://tasmota.github.io/docs/Compile-your-build/).
+I used [GitPod](https://www.gitpod.io/) to compile tasmota.
 
-(plaatje montage)
+In ```user_config_override.h``` i added
+```
+#ifndef USE_SCRIPT
+#define USE_SCRIPT  // adds about 17k flash size, variable ram size
+#endif
+#ifdef USE_RULES
+#undef USE_RULES
+#endif 
+
+#ifdef SCRIPT_POWER_SECTION
+#undef SCRIPT_POWER_SECTION
+#endif 
+```
+
+The last section (defining SCRIPT_POWER_SECTION) is not clearly stated in the bladadder-template-page.
+It is needed to control the device by WebGUI and HomeAssistant.
+
+With the new .bin-file you can flash the firmware to the wall-module.
+How to flash? It is explained in [the templates page of blakadder](https://templates.blakadder.com/qs-wifi_D01_dimmer.html), but i used [OTA and 'TuyaConvert'](https://tasmota.github.io/docs/Tuya-Convert/) and didn't have to open the device to put wires to it.
+
+## Step 2: add template and script
+Reading [the templates page of blakadder](https://templates.blakadder.com/qs-wifi_D01_dimmer.html) you have to add the template for the device to tasmota:
+```
+ {"NAME":"QS-WiFi-D01-TRIAC","GPIO":[0,3200,0,3232,0,0,0,0,0,352,416,0,0,0],"FLAG":0,"BASE":18}
+```
+
+And add the script found at a [a github subpage](https://gist.github.com/thxthx0/12074f1f5249e14b2a0aada75f590c9b).
+
+## Step 3: Testing script and availability
+I tested the device using a wooden board
+
+<div align="center">
+  <kbd>
+    <img src="images/WifiDimmer testsetup - smaller.jpg" />
+  </kbd>
+</div>
+
+----------------------------
+
 
 ## Not covered but links where to find
 
